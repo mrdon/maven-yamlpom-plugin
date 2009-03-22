@@ -1,0 +1,20 @@
+groupId: org.twdata.maven
+artifactId: maven-yamlpom-plugin
+version: 1.0-SNAPSHOT
+packaging: maven-plugin  
+name: YAML POM Plugin
+dependencies:  
+  - { groupId: org.apache.maven, artifactId: maven-plugin-api, version: 2.0 }
+  - { groupId: SnakeYAML, artifactId: SnakeYAML, version: 1.1 }
+  - { groupId: commons-io, artifactId: commons-io, version: 1.4 }
+  - { groupId: junit, artifactId: junit, version: 3.8.1, scope: test }
+build:  
+  plugins:  
+    - artifactId: maven-compiler-plugin
+      configuration:
+        source: 1.5
+        target: 1.5
+repositories:
+  - id: snakeyaml
+    name: SnakeYAML repository
+    url: http://snakeyamlrepo.appspot.com/repository
