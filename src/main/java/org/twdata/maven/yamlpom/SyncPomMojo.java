@@ -88,8 +88,7 @@ public class SyncPomMojo extends AbstractMojo
                     tab + "<modelVersion>4.0.0</modelVersion>\n");
 
             convert((Map<String,Object>) yamlPom, tab, xmlWriter);
-            xmlWriter.write("</project>");
-            System.out.println("POM:\n" + xmlWriter.toString());
+            xmlWriter.write("</project>\n");
         }
         catch (FileNotFoundException e)
         {
