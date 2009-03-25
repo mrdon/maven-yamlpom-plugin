@@ -1,21 +1,16 @@
 package org.twdata.maven.yamlpom;
 
-import junit.framework.TestCase;
-
 import java.io.File;
-import java.io.IOException;
-import java.io.FileReader;
 import java.util.Map;
 import java.util.List;
 
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.commons.io.FileUtils;
 import org.yaml.snakeyaml.Yaml;
 
 /**
  *
  */
-public class PomToYamlConvertTest extends AbstractConverterTestBase
+public class PomToYamlConvertTest extends AbstractConverterTestbase
 {
     public void testConvertSimple() throws Exception
     {
@@ -37,6 +32,27 @@ public class PomToYamlConvertTest extends AbstractConverterTestBase
         assertEquals("maven-plugin", data.get("packaging"));
 
         assertTrue(data.get("dependencies") instanceof List);
+    }
+
+    public void testConvertScalarList() throws Exception
+    {
+        Map<String, Object> data = buildYaml("/pom.scalarlist.xml");
+
+        assertTrue(data.get("properties") instanceof List);
+        assertEquals("foo", ((List)data.get("properties")).get(0));
+    }
+
+    public void testConvertAttributes() throws Exception
+    {
+        Map<String, Object> data = buildYaml("/pom.attrs.xml");
+
+        Map plugin = (Map) ((List)((Map)data.get("build")).get("plugins")).get(0);
+        Map tasks = (Map) ((Map)plugin.get("configuration")).get("tasks");
+        
+        assertTrue(data.get("properties") instanceof List);
+        assertEquals("foo", ((List)data.get("properties")).get(0));
+
+
     }
 
     private Map<String, Object> buildYaml(String path) throws Exception

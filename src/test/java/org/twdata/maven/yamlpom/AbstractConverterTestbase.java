@@ -9,7 +9,7 @@ import java.net.URISyntaxException;
 /**
  *
  */
-public class AbstractConverterTestBase extends TestCase
+public class AbstractConverterTestbase extends TestCase
 {
     protected static File pathToFile(String path) throws Exception
     {

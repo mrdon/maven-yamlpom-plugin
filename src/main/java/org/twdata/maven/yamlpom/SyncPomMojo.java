@@ -42,14 +42,14 @@ public class SyncPomMojo extends AbstractMojo
      *
      * @parameter expression="${pom.yaml}"
      */
-    private String yamlPomName = "pom.yaml";
+    private String yamlPomName = "pom.yml";
 
     /**
      * Yaml tab
      *
      * @parameter expression="${yamlpom.tab}"
      */
-    private String tab = "    ";
+    private String tab = "  ";
 
     public void execute() throws MojoExecutionException
     {
@@ -58,15 +58,24 @@ public class SyncPomMojo extends AbstractMojo
         File yamlFile = new File(yamlPomName);
         if (!yamlFile.exists())
         {
+            getLog().info("Converting pom.xml into "+yamlPomName);
             PomToYamlConverter converter = new PomToYamlConverter(tab);
             converter.convert(pomFile, yamlFile);
             return;
         }
-        if (pomFile.exists() && pomFile.lastModified() > yamlFile.lastModified())
+        if (pomFile.exists())
         {
-            throw new MojoExecutionException("pom.xml is newer than "+yamlPomName+", will not overwrite pom.xml");
+            if (pomFile.lastModified() > yamlFile.lastModified())
+            {
+                throw new MojoExecutionException("pom.xml is newer than "+yamlPomName+", will not overwrite pom.xml");
+            }
+            else if (pomFile.lastModified() == yamlFile.lastModified())
+            {
+                getLog().info("pom.xml and "+yamlPomName + " in sync");
+                return;
+            }
         }
-        
+        getLog().info("Converting "+yamlPomName + " into pom.xml");
         YamlToPomConverter converter = new YamlToPomConverter(tab);
         converter.convert(yamlFile, pomFile);
     }

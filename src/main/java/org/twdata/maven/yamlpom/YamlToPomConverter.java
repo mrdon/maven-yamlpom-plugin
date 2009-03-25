@@ -2,11 +2,16 @@ package org.twdata.maven.yamlpom;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.FileUtils;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.Loader;
+import org.yaml.snakeyaml.nodes.NodeId;
+import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.*;
 import java.util.Map;
 import java.util.Collection;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -17,18 +22,20 @@ public class YamlToPomConverter
 
     public YamlToPomConverter(String tab)
     {
-        this.tab = tab;
+        this.tab = "    ";
     }
 
     public void convert(File yamlFile, File pomFile) throws MojoExecutionException
     {
         Reader yamlReader = null;
         Writer xmlWriter = null;
+        File pomTmpFile = null;
         try
         {
-            xmlWriter = new FileWriter(pomFile);
+            pomTmpFile = File.createTempFile("pom", "xml");
+            xmlWriter = new FileWriter(pomTmpFile);
             yamlReader = new FileReader(yamlFile);
-            Yaml yaml = new Yaml();
+            Yaml yaml = buildYaml();
             Object yamlPom = yaml.load(yamlReader);
 
             xmlWriter.write(
@@ -53,7 +60,18 @@ public class YamlToPomConverter
             IOUtils.closeQuietly(yamlReader);
             IOUtils.closeQuietly(xmlWriter);
         }
-        pomFile.setLastModified(yamlFile.lastModified());
+        if (pomTmpFile != null)
+        {
+            try
+            {
+                FileUtils.copyFile(pomTmpFile, pomFile);
+                pomFile.setLastModified(yamlFile.lastModified());
+            }
+            catch (IOException e)
+            {
+                throw new MojoExecutionException("Cannot copy pom tmp", e);
+            }
+        }
     }
 
     private void convert(Map<String,Object> map, String tabs, Writer writer) throws IOException
@@ -94,5 +112,35 @@ public class YamlToPomConverter
                 writer.write(tabs + "<" + key + ">" + value + "</" + key + ">\n");
             }
         }
+    }
+
+    Yaml buildYaml()
+    {
+        Loader myLoader = new Loader();
+        Yaml yaml = new Yaml(myLoader);
+
+        // Don't let the YAML parser try to guess things.  Will screw up things like version numbers that look like
+        // 1.00 by converting them to an int "1.0"
+        myLoader.setResolver(new Resolver()
+        {
+            @Override
+            public String resolve(NodeId kind, String value, boolean implicit)
+            {
+                String tag = super.resolve(kind, value, implicit);
+                if (implicit)
+                {
+                    if (tag.equals("tag:yaml.org,2002:bool") ||
+                        tag.equals("tag:yaml.org,2002:float") ||
+                        tag.equals("tag:yaml.org,2002:int") ||
+                        tag.equals("tag:yaml.org,2002:timestamp") ||
+                        tag.equals("tag:yaml.org,2002:value"))
+                    {
+                        return "tag:yaml.org,2002:str";
+                    }
+                }
+                return tag;
+            }
+        });
+        return yaml;
     }
 }

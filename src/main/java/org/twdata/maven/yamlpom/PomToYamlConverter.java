@@ -14,7 +14,8 @@ import java.util.Iterator;
 public class PomToYamlConverter
 {
     private final String tab;
-    private final int MAX_LINE_LENGTH = 80;
+    private final int MAX_LINE_LENGTH = 120;
+    private final char[] INVALID_SCALAR_CHARACTERS = new char[] {':', '#', '[', ']', '{', '}', ',', '*', '\t'};
 
     public PomToYamlConverter(String tab)
     {
@@ -70,27 +71,40 @@ public class PomToYamlConverter
             // is scalar
             if (element.elements().isEmpty())
             {
-                yamlWriter.write(tabs + prefix + name + ": " +element.getTextTrim() + "\n");
+                yamlWriter.write(tabs + prefix + name + ": " + sanitizeScalar(element.getTextTrim()) + "\n");
             }
             // is list
             else if (isList(element))
             {
-                yamlWriter.write(tabs + prefix + name + ":\n");
-                for (Iterator i = element.elementIterator(); i.hasNext(); )
+                yamlWriter.write(tabs + prefix + name + ":");
+                if (shouldInline(element, (tabs + tab + "  ").length()))
                 {
-                    Element list = (Element) i.next();
-                    if (shouldInlineMap(list, (tabs + tab + "  ").length()))
+                    printInlineList(element, yamlWriter);
+                }
+                else
+                {
+                    yamlWriter.write("\n");
+                    for (Iterator i = element.elementIterator(); i.hasNext(); )
                     {
-                        printInlineMap(list, tabs + tab + "- ", yamlWriter);
-                    }
-                    else
-                    {
-                        boolean isFirst = true;
-                        for (Iterator it = list.elementIterator(); it.hasNext(); )
+                        Element list = (Element) i.next();
+                        if (shouldInline(list, (tabs + tab + "  ").length()))
                         {
-                            Element listItem = (Element)it.next();
-                            convert(listItem, (!isFirst ? "  " : "")  + tabs + tab, isFirst, yamlWriter);
-                            isFirst = false;
+                            printInlineMap(list, tabs + tab + "- ", yamlWriter);
+                        }
+                        // is scalar entry
+                        else if (list.elements().isEmpty())
+                        {
+                            yamlWriter.write(tabs + tab + "- " + list.getTextTrim() + "\n");
+                        }
+                        else
+                        {
+                            boolean isFirst = true;
+                            for (Iterator it = list.elementIterator(); it.hasNext(); )
+                            {
+                                Element listItem = (Element)it.next();
+                                convert(listItem, (!isFirst ? "  " : "")  + tabs + tab, isFirst, yamlWriter);
+                                isFirst = false;
+                            }
                         }
                     }
                 }
@@ -106,22 +120,57 @@ public class PomToYamlConverter
         }
     }
 
+    private String sanitizeScalar(String val)
+    {
+        boolean needsQuoted = false;
+        for (char forbiddenChar : INVALID_SCALAR_CHARACTERS)
+        {
+            if (val.indexOf(forbiddenChar) > -1)
+            {
+                needsQuoted = true;
+            }
+        }
+
+        if (needsQuoted)
+        {
+            val = val.replaceAll("\\\\", "\\\\");
+            val = val.replaceAll("\"", "\\\"");
+            val = "\"" + val + "\"";
+        }
+        return val;
+    }
+
     private void printInlineMap(Element listItem, String tab, Writer yamlWriter) throws IOException
     {
         yamlWriter.write(tab + "{ ");
         for (Iterator i = listItem.elementIterator(); i.hasNext(); )
         {
             Element e = (Element) i.next();
-            yamlWriter.write(e.getName() + ": " + e.getTextTrim());
+            yamlWriter.write(e.getName() + ": " + sanitizeScalar(e.getTextTrim()));
             if (i.hasNext())
             {
                 yamlWriter.write(", ");
             }
         }
-        yamlWriter.write("}\n");
+        yamlWriter.write(" }\n");
     }
 
-    private boolean shouldInlineMap(Element element, int startLength)
+    private void printInlineList(Element listItem, Writer yamlWriter) throws IOException
+    {
+        yamlWriter.write(" [ ");
+        for (Iterator i = listItem.elementIterator(); i.hasNext(); )
+        {
+            Element e = (Element) i.next();
+            yamlWriter.write(sanitizeScalar(e.getTextTrim()));
+            if (i.hasNext())
+            {
+                yamlWriter.write(", ");
+            }
+        }
+        yamlWriter.write(" ]\n");
+    }
+
+    private boolean shouldInline(Element element, int startLength)
     {
         int length = startLength;
         if (element.elements().isEmpty())
