@@ -7,8 +7,10 @@ dependencies:
   - { groupId: org.apache.maven, artifactId: maven-plugin-api, version: 2.0 }
   - { groupId: SnakeYAML, artifactId: SnakeYAML, version: 1.1 }
   - { groupId: commons-io, artifactId: commons-io, version: 1.4 }
+  - { groupId: dom4j, artifactId: dom4j, version: 1.4 }
   - { groupId: junit, artifactId: junit, version: 3.8.1, scope: test }
-build:  
+  - { groupId: xmlunit, artifactId: xmlunit, version: 1.2, scope: test }
+build:
   plugins:  
     - artifactId: maven-compiler-plugin
       configuration:

@@ -1,0 +1,4 @@
+groupId: org.twdata.maven
+artifactId: maven-yamlpom-plugin
+version: 1.0-SNAPSHOT
+packaging: maven-plugin
