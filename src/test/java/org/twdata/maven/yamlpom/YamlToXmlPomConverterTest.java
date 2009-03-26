@@ -28,6 +28,12 @@ public class YamlToXmlPomConverterTest extends AbstractConverterTestbase
         
     }
 
+    public void testConvertWithEmbeddedXml() throws Exception
+    {
+        convertTest("/pom.config.yml", "//x:plugin/x:executions/x:execution/x:configuration/x:tasks/x:mkdir");
+
+    }
+
     private void convertTest(String path, String... xpathList) throws Exception
     {
         YamlToPomConverter converter = new YamlToPomConverter("  ");

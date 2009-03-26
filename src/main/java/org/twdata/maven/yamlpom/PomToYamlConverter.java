@@ -4,6 +4,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.commons.io.IOUtils;
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
+import org.dom4j.io.OutputFormat;
+import org.dom4j.io.XMLWriter;
 
 import java.io.*;
 import java.util.Iterator;
@@ -68,6 +70,17 @@ public class PomToYamlConverter
             String name = element.getName();
             String prefix = isInList ? "- " : "";
 
+            if ("configuration".equals(name))
+            {
+                yamlWriter.write(tabs + "configuration : |\n");
+                for (Iterator i = element.elementIterator(); i.hasNext(); )
+                {
+                    yamlWriter.write(elementToBlockString((Element) i.next(), tabs + tab));
+                }
+
+                return;
+            }
+
             // is scalar
             if (element.elements().isEmpty())
             {
@@ -120,6 +133,40 @@ public class PomToYamlConverter
         }
     }
 
+    static String elementToBlockString(Element root, String indent)
+            throws IOException
+    {
+        //root.remove(root.getNamespace());
+        //root.setQName(new QName(root.getName()));
+        removeNamespaceFromElement(root);
+        final StringWriter swriter = new StringWriter();
+        final OutputFormat outformat = OutputFormat.createPrettyPrint();
+        outformat.setSuppressDeclaration(true);
+        final XMLWriter writer = new XMLWriter(swriter, outformat);
+        writer.write(root);
+        writer.flush();
+        String xml = swriter.toString();
+        StringWriter block = new StringWriter();
+        String[] lines = xml.split("\n");
+        for (String line : lines)
+        {
+            block.write(indent);
+            block.write(line);
+            block.write("\n");
+        }
+        return block.toString();
+    }
+
+    static void removeNamespaceFromElement(Element node)
+    {
+        node.setQName(new QName(node.getName()));
+        for (Iterator i = node.elementIterator(); i.hasNext(); )
+        {
+            removeNamespaceFromElement((Element)i.next());
+        }
+    }
+
+
     private String sanitizeScalar(String val)
     {
         boolean needsQuoted = false;
@@ -133,10 +180,16 @@ public class PomToYamlConverter
 
         if (needsQuoted)
         {
-            val = val.replaceAll("\\\\", "\\\\");
-            val = val.replaceAll("\"", "\\\"");
-            val = "\"" + val + "\"";
+            val = convertToQuoted(val);
         }
+        return val;
+    }
+
+    private static String convertToQuoted(String val)
+    {
+        val = val.replaceAll("\\\\", "\\\\");
+        val = val.replaceAll("\"", "\\\"");
+        val = "\"" + val + "\"";
         return val;
     }
 

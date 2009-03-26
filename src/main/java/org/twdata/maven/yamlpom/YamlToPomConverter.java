@@ -109,9 +109,34 @@ public class YamlToPomConverter
             }
             else
             {
-                writer.write(tabs + "<" + key + ">" + value + "</" + key + ">\n");
+                String text = indent(value.toString(), tabs + tab);
+                if (text.endsWith("\n"))
+                {
+                    text += tabs;
+                }
+                writer.write(tabs + "<" + key + ">" + text + "</" + key + ">\n");
             }
         }
+    }
+
+    static String indent(String text, String tab)
+    {
+        StringWriter block = new StringWriter();
+        String[] lines = text.split("\n");
+        if (lines.length > 1)
+        {
+            for (String line : lines)
+            {
+                block.write(tab);
+                block.write(line);
+                block.write("\n");
+            }
+        }
+        else
+        {
+            block.write(text);
+        }
+        return block.toString();
     }
 
     Yaml buildYaml()

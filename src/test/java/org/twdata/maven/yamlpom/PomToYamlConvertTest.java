@@ -47,12 +47,10 @@ public class PomToYamlConvertTest extends AbstractConverterTestbase
         Map<String, Object> data = buildYaml("/pom.attrs.xml");
 
         Map plugin = (Map) ((List)((Map)data.get("build")).get("plugins")).get(0);
-        Map tasks = (Map) ((Map)plugin.get("configuration")).get("tasks");
-        
-        assertTrue(data.get("properties") instanceof List);
-        assertEquals("foo", ((List)data.get("properties")).get(0));
-
-
+        String config = (String) plugin.get("configuration");
+        assertNotNull(config);
+        System.out.println(config);
+        assertTrue(config.contains("<tasks>"));
     }
 
     private Map<String, Object> buildYaml(String path) throws Exception

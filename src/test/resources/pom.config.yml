@@ -1,0 +1,35 @@
+parent:
+  groupId: com.atlassian.pom
+  artifactId: atlassian-closedsource-pom
+  version: 14
+groupId: com.atlassian.crowd
+artifactId: atlassian-crowd
+version: 1.7-SNAPSHOT
+build:
+  plugins:
+    - artifactId: maven-antrun-plugin
+      inherited: false
+      executions:
+        - phase: package
+          configuration : |
+            
+            <tasks>
+              <tstamp>
+                <format property="TODAY" pattern="yyyyMMdd" locale="en"/>
+                <format property="TODAY_STRING" pattern="MMM dd, yyyy"/>
+              </tstamp>
+              <mkdir dir="target/classes"/>
+              <javadoc packagenames="com.atlassian.crowd.integration.*" defaultexcludes="yes" destdir="${project.build.directory}/javadoc" author="true" version="true" use="true" windowtitle="Atlassian Software Systems - Crowd - ${project.version}">
+                <fileset dir="${basedir}">
+                  <include name="components/crowd-integration/crowd-integration-api/src/main/java/com/atlassian/crowd/integration/**/*.java"/>
+                  <include name="components/crowd-integration/crowd-integration-jive/src/main/java/com/atlassian/crowd/integration/**/*.java"/>
+                </fileset>
+                <doctitle><![CDATA[<h1><a href='http://www.atlassian.com/'>Atlassian Software Systems - Crowd - ${project.version}</a></h1>]]></doctitle>
+                <bottom><![CDATA[<i>Copyright &#169; 2007 <a href='http://www.atlassian.com/'>Atlassian Software Systems</a>. All Rights Reserved.</i>]]></bottom>
+                <link href="http://java.sun.com/j2se/1.5.0/docs/api/"/>
+                <link href="http://java.sun.com/j2ee/sdk_1.3/techdocs/api/"/>
+              </javadoc>
+            </tasks>
+          goals: [ run ]
+repositories:
+  - { id: atlassian-proxy, url: "https://m2proxy.atlassian.com/repository/public" }
