@@ -79,7 +79,7 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
 
             if ("configuration".equals(name))
             {
-                yamlWriter.write(tabs + "configuration : |\n");
+                yamlWriter.write(tabs + "configuration : |\n\n");
                 for (Iterator i = element.elementIterator(); i.hasNext(); )
                 {
                     yamlWriter.write(elementToBlockString((Element) i.next(), tabs + tab));

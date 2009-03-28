@@ -26,6 +26,8 @@ import java.io.*;
  *
  * @goal sync
  * @phase initialize
+ * @aggregator
+ * @requiresProject false
  */
 public class SyncPomMojo extends AbstractMojo
 {
@@ -56,6 +58,22 @@ public class SyncPomMojo extends AbstractMojo
      * @parameter expression="${yamlpom.xml.indent}"
      */
     private int xmlIndent = 4;
+
+    /**
+     * Instructs the plugin to stop execution if the pom XML is generated
+     *
+     * @parameter expression="${yamlpom.failIfXmlSync}"
+     */
+    private boolean failIfXmlSync = true;
+
+    /**
+     * Instructs the plugin to stop execution it detects changes that it cannot sync
+     *
+     * @parameter expression="${yamlpom.failIfCannotSync}"
+     */
+    private boolean failIfCannotSync = true;
+
+
 
     public void execute() throws MojoExecutionException
     {
@@ -91,6 +109,10 @@ public class SyncPomMojo extends AbstractMojo
                         .logWith(getLog())
                         .convert();
                     syncManager.save();
+                    if (failIfXmlSync)
+                    {
+                        throw new MojoExecutionException("pom.xml modified.  You must retry your Maven command.");
+                    }
                     break;
                 case SYNC_FILE_ONLY:
                     getLog().info("Files in sync, creating a sync file");
@@ -100,8 +122,10 @@ public class SyncPomMojo extends AbstractMojo
                     getLog().info("No sync required");
                     break;
                 case UNKNOWN:
-                    getLog().error("Unable to automatically sync");
-                    throw new MojoExecutionException("Unable to automatically sync");
+                    if (failIfCannotSync)
+                        throw new MojoExecutionException("Unable to automatically sync");
+                    else
+                        getLog().error("Unable to automatically sync");
             }
         }
         catch (IOException e)

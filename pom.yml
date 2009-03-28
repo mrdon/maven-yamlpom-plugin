@@ -14,6 +14,7 @@ build:
   plugins:
     - artifactId: maven-compiler-plugin
       configuration : |
+
         <source>1.5</source>
         <target>1.5</target>
 repositories:
