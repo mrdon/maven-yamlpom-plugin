@@ -1,6 +1,6 @@
 groupId: org.twdata.maven
 artifactId: maven-yamlpom-plugin
-version: 1.0-SNAPSHOT
+version: 0.2-SNAPSHOT
 packaging: maven-plugin
 name: YAML POM Plugin
 dependencies:
@@ -12,9 +12,7 @@ dependencies:
   - { groupId: xmlunit, artifactId: xmlunit, version: 1.2, scope: test }
 build:
   extensions:
-    - groupId: org.jvnet.wagon-svn
-      artifactId: wagon-svn
-      version: 1.8
+    - { groupId: org.jvnet.wagon-svn, artifactId: wagon-svn, version: 1.8 }
   plugins:
     - artifactId: maven-compiler-plugin
       configuration : |

@@ -90,24 +90,12 @@ public class SyncPomMojo extends AbstractMojo
             {
                 case YAML:
                     getLog().info("Converting "+xmlFile.getName() + " into " + yamlFile.getName());
-                    new XmlToYamlConverter()
-                        .indentSpaces(yamlIndent)
-                        .fromFile(xmlFile)
-                        .targetFile(yamlFile)
-                        .syncFile(syncFile)
-                        .logWith(getLog())
-                        .convert();
+                    sync(xmlFile, yamlFile, syncFile, false);
                     syncManager.save();
                     break;
                 case XML:
                     getLog().info("Converting "+yamlFile.getName() + " into " + xmlFile.getName());
-                    new YamlToXmlConverter()
-                        .indentSpaces(xmlIndent)
-                        .fromFile(yamlFile)
-                        .targetFile(xmlFile)
-                        .syncFile(syncFile)
-                        .logWith(getLog())
-                        .convert();
+                    sync(xmlFile, yamlFile, syncFile, true);
                     syncManager.save();
                     if (failIfXmlSync)
                     {
@@ -131,6 +119,44 @@ public class SyncPomMojo extends AbstractMojo
         catch (IOException e)
         {
             throw new MojoExecutionException("Error syncing YAML pom", e);
+        }
+    }
+
+    private void sync(File xmlFile, File yamlFile, File syncFile, boolean xmlFirst) throws IOException
+    {
+        if (xmlFirst)
+        {
+            new YamlToXmlConverter()
+                .indentSpaces(xmlIndent)
+                .fromFile(yamlFile)
+                .targetFile(xmlFile)
+                .syncFile(syncFile)
+                .logWith(getLog())
+                .convert();
+            new XmlToYamlConverter()
+                .indentSpaces(yamlIndent)
+                .fromFile(xmlFile)
+                .targetFile(yamlFile)
+                .syncFile(syncFile)
+                .logWith(getLog())
+                .convert();
+        }
+        else
+        {
+            new XmlToYamlConverter()
+                .indentSpaces(yamlIndent)
+                .fromFile(xmlFile)
+                .targetFile(yamlFile)
+                .syncFile(syncFile)
+                .logWith(getLog())
+                .convert();
+            new YamlToXmlConverter()
+                .indentSpaces(xmlIndent)
+                .fromFile(yamlFile)
+                .targetFile(xmlFile)
+                .syncFile(syncFile)
+                .logWith(getLog())
+                .convert();
         }
     }
 }
