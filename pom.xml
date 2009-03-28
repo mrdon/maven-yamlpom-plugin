@@ -58,6 +58,10 @@
             </plugin>
         </plugins>
     </build>
+    <scm>
+        <connection>scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git</connection>
+        <url>scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git</url>
+    </scm>
     <repositories>
         <repository>
             <id>snakeyaml</id>

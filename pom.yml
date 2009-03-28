@@ -21,5 +21,8 @@ build:
       configuration : |
 
         <preparationGoals>clean yamlpom:sync verify</preparationGoals>
+scm:
+  connection: scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git
+  url: scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git
 repositories:
   - { id: snakeyaml, name: SnakeYAML repository, url: "http://snakeyamlrepo.appspot.com/repository" }
