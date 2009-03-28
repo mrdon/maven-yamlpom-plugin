@@ -149,6 +149,8 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
         final StringWriter swriter = new StringWriter();
         final OutputFormat outformat = OutputFormat.createPrettyPrint();
         outformat.setSuppressDeclaration(true);
+        outformat.setNewLineAfterNTags(0);
+        outformat.setNewlines(false);
         final XMLWriter writer = new XMLWriter(swriter, outformat);
         writer.write(root);
         writer.flush();

@@ -79,11 +79,11 @@ public class SyncManager
                 }
                 else if (!xmlHasSameHash(xmlMd5) && yamlHasSameHash(yamlMd5))
                 {
-                    return FormatToTarget.XML;
+                    return FormatToTarget.YAML;
                 }
                 else if (xmlHasSameHash(xmlMd5) && !yamlHasSameHash(yamlMd5))
                 {
-                    return FormatToTarget.YAML;
+                    return FormatToTarget.XML;
                 }
             }
         }

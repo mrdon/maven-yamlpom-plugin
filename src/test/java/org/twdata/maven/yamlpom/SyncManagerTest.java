@@ -89,7 +89,7 @@ public class SyncManagerTest extends TestCase
         FileUtils.writeStringToFile(xmlFile, "<project><bob/></project>");
         yamlFile.setLastModified(yamlFile.lastModified() + 4000);
         mgr = new SyncManager(xmlFile, yamlFile, syncFile);
-        assertEquals(SyncManager.FormatToTarget.XML, mgr.determineFormatToTarget());
+        assertEquals(SyncManager.FormatToTarget.YAML, mgr.determineFormatToTarget());
     }
 
     public void testSyncDifferentTimestampDifferentYamlContent() throws IOException
@@ -102,7 +102,7 @@ public class SyncManagerTest extends TestCase
         FileUtils.writeStringToFile(yamlFile, "artifactId: jim");
         xmlFile.setLastModified(xmlFile.lastModified() + 3000);
         mgr = new SyncManager(xmlFile, yamlFile, syncFile);
-        assertEquals(SyncManager.FormatToTarget.YAML, mgr.determineFormatToTarget());
+        assertEquals(SyncManager.FormatToTarget.XML, mgr.determineFormatToTarget());
     }
 
 }
