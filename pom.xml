@@ -69,4 +69,11 @@
             <url>http://snakeyamlrepo.appspot.com/repository</url>
         </repository>
     </repositories>
+    <distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>twdata-m2-repository</id>
+            <url>svn:https://twdata-m2-repository.googlecode.com/svn</url>
+        </repository>
+    </distributionManagement>
 </project>
