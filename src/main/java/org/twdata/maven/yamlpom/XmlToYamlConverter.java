@@ -33,7 +33,7 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
         }
         catch (RuntimeException ex)
         {
-            log.error("Generated YAML is not valid", ex);
+            log.error("Generated YAML is not valid: \n" + yamlText, ex);
         }
         return false;
     }
@@ -79,11 +79,14 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
 
             if ("configuration".equals(name))
             {
-                yamlWriter.write(tabs + "configuration : |\n\n");
+
+                StringWriter configWriter = new StringWriter();
                 for (Iterator i = element.elementIterator(); i.hasNext(); )
                 {
-                    yamlWriter.write(elementToBlockString((Element) i.next(), tabs + tab));
+                    configWriter.append(elementToBlockString((Element) i.next()));
                 }
+                yamlWriter.write(tabs + "configuration : |\n");
+                yamlWriter.write(indent(configWriter.toString(), tabs + tab));
 
                 return;
             }
@@ -140,7 +143,7 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
         }
     }
 
-    static String elementToBlockString(Element root, String indent)
+    static String elementToBlockString(Element root)
             throws IOException
     {
         //root.remove(root.getNamespace());
@@ -149,14 +152,18 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
         final StringWriter swriter = new StringWriter();
         final OutputFormat outformat = OutputFormat.createPrettyPrint();
         outformat.setSuppressDeclaration(true);
-        outformat.setNewLineAfterNTags(0);
-        outformat.setNewlines(false);
+        outformat.setNewLineAfterNTags(1);
+        outformat.setNewlines(true);
         final XMLWriter writer = new XMLWriter(swriter, outformat);
         writer.write(root);
         writer.flush();
-        String xml = swriter.toString();
+        return swriter.toString();
+    }
+
+    static String indent(String text, String indent)
+    {
         StringWriter block = new StringWriter();
-        String[] lines = xml.split("\n");
+        String[] lines = text.split("\n");
         for (String line : lines)
         {
             block.write(indent);
@@ -165,6 +172,7 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
         }
         return block.toString();
     }
+
 
     static void removeNamespaceFromElement(Element node)
     {
