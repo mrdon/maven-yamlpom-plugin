@@ -30,4 +30,4 @@ distributionManagement:
   repository:
     uniqueVersion: false
     id: twdata-m2-repository
-    url: svn:https://twdata-m2-repository.googlecode.com/svn
+    url: "svn:https://twdata-m2-repository.googlecode.com/svn"
