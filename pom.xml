@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.twdata.maven</groupId>
     <artifactId>maven-yamlpom-plugin</artifactId>
-    <version>0.1.1</version>
+    <version>0.2-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>YAML POM Plugin</name>
     <dependencies>
@@ -80,7 +80,7 @@
             <plugin>
                 <artifactId>maven-release-plugin</artifactId>
                 <configuration>                    
-                    <preparationGoals>clean yamlpom:sync yamlpom:release-prepare verify</preparationGoals>
+                    <preparationGoals>clean yamlpom:sync yamlpom:prepare-release verify</preparationGoals>
                 </configuration>
             </plugin>
         </plugins>
