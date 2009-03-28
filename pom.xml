@@ -50,6 +50,12 @@
                     <target>1.5</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <configuration>                    
+                    <preparationGoals>clean yamlpom:sync verify</preparationGoals>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <repositories>

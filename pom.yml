@@ -17,5 +17,9 @@ build:
 
         <source>1.5</source>
         <target>1.5</target>
+    - artifactId: maven-release-plugin
+      configuration : |
+
+        <preparationGoals>clean yamlpom:sync verify</preparationGoals>
 repositories:
   - { id: snakeyaml, name: SnakeYAML repository, url: "http://snakeyamlrepo.appspot.com/repository" }
