@@ -32,7 +32,7 @@ build:
     - artifactId: maven-release-plugin
       configuration : |
 
-        <preparationGoals>clean yamlpom:sync yamlpom:prepare-release verify</preparationGoals>
+        <preparationGoals>clean yamlpom:prepare-release verify</preparationGoals>
 scm:
   connection: "scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git"
   url: "scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git"
