@@ -13,10 +13,10 @@ dependencies:
 build:
   plugins:
     - artifactId: maven-compiler-plugin
-      configuration:
-        source: 1.5
-        target: 1.5
+      configuration : |
+        
+        <source>1.5</source>
+        
+        <target>1.5</target>
 repositories:
-  - id: snakeyaml
-    name: SnakeYAML repository
-    url: http://snakeyamlrepo.appspot.com/repository
+  - { id: snakeyaml, name: SnakeYAML repository, url: "http://snakeyamlrepo.appspot.com/repository" }

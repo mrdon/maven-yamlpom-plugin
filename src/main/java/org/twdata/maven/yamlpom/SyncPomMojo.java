@@ -25,18 +25,10 @@ import java.io.*;
  * Goal which touches a timestamp file.
  *
  * @goal sync
- * @phase process-sources
+ * @phase initialize
  */
 public class SyncPomMojo extends AbstractMojo
 {
-    /**
-     * Location of the file.
-     *
-     * @parameter expression="${project.build.directory}"
-     * @required
-     */
-    private File outputDirectory;
-
     /**
      * Yaml pom file
      *
@@ -45,38 +37,76 @@ public class SyncPomMojo extends AbstractMojo
     private String yamlPomName = "pom.yml";
 
     /**
-     * Yaml tab
+     * Sync file name
      *
-     * @parameter expression="${yamlpom.tab}"
+     * @parameter expression="${yamlpom.syncfile}"
      */
-    private String tab = "  ";
+    private String syncFileName = ".pom.yml";
+
+    /**
+     * Number of spaces to indent YAML with
+     *
+     * @parameter expression="${yamlpom.yaml.indent}"
+     */
+    private int yamlIndent = 2;
+
+    /**
+     * Number of spaces to indent XML with
+     *
+     * @parameter expression="${yamlpom.xml.indent}"
+     */
+    private int xmlIndent = 4;
 
     public void execute() throws MojoExecutionException
     {
-        File pomFile = new File("pom.xml");
+        File xmlFile = new File("pom.xml");
 
         File yamlFile = new File(yamlPomName);
-        if (!yamlFile.exists())
+        File syncFile = new File(syncFileName);
+
+        SyncManager syncManager = new SyncManager(xmlFile, yamlFile, syncFile);
+
+        try
         {
-            getLog().info("Converting pom.xml into "+yamlPomName);
-            PomToYamlConverter converter = new PomToYamlConverter(tab);
-            converter.convert(pomFile, yamlFile);
-            return;
+            switch (syncManager.determineFormatToTarget())
+            {
+                case YAML:
+                    getLog().info("Converting "+xmlFile.getName() + " into " + yamlFile.getName());
+                    new XmlToYamlConverter()
+                        .indentSpaces(yamlIndent)
+                        .fromFile(xmlFile)
+                        .targetFile(yamlFile)
+                        .syncFile(syncFile)
+                        .logWith(getLog())
+                        .convert();
+                    syncManager.save();
+                    break;
+                case XML:
+                    getLog().info("Converting "+yamlFile.getName() + " into " + xmlFile.getName());
+                    new YamlToXmlConverter()
+                        .indentSpaces(xmlIndent)
+                        .fromFile(yamlFile)
+                        .targetFile(xmlFile)
+                        .syncFile(syncFile)
+                        .logWith(getLog())
+                        .convert();
+                    syncManager.save();
+                    break;
+                case SYNC_FILE_ONLY:
+                    getLog().info("Files in sync, creating a sync file");
+                    syncManager.save();
+                    break;
+                case NONE:
+                    getLog().info("No sync required");
+                    break;
+                case UNKNOWN:
+                    getLog().error("Unable to automatically sync");
+                    throw new MojoExecutionException("Unable to automatically sync");
+            }
         }
-        if (pomFile.exists())
+        catch (IOException e)
         {
-            if (pomFile.lastModified() > yamlFile.lastModified())
-            {
-                throw new MojoExecutionException("pom.xml is newer than "+yamlPomName+", will not overwrite pom.xml");
-            }
-            else if (pomFile.lastModified() == yamlFile.lastModified())
-            {
-                getLog().info("pom.xml and "+yamlPomName + " in sync");
-                return;
-            }
+            throw new MojoExecutionException("Error syncing YAML pom", e);
         }
-        getLog().info("Converting "+yamlPomName + " into pom.xml");
-        YamlToPomConverter converter = new YamlToPomConverter(tab);
-        converter.convert(yamlFile, pomFile);
     }
 }

@@ -17,7 +17,7 @@ import org.dom4j.io.XMLWriter;
 /**
  *
  */
-public class YamlToXmlPomConverterTest extends AbstractConverterTestbase
+public class YamlToXmlConverterTest extends AbstractConverterTestbase
 {
     public void testConvert() throws Exception
     {
@@ -36,9 +36,12 @@ public class YamlToXmlPomConverterTest extends AbstractConverterTestbase
 
     private void convertTest(String path, String... xpathList) throws Exception
     {
-        YamlToPomConverter converter = new YamlToPomConverter("  ");
         File pom = File.createTempFile("pom", ".xml");
-        converter.convert(pathToFile(path), pom);
+        new YamlToXmlConverter()
+                .indentSpaces(2)
+                .fromFile(pathToFile(path))
+                .targetFile(pom)
+                .convert();
 
         Document doc = DocumentHelper.parseText(FileUtils.readFileToString(pom));
         for (final String xp : xpathList)

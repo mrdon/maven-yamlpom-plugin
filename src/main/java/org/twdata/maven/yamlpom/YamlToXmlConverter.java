@@ -1,41 +1,28 @@
 package org.twdata.maven.yamlpom;
 
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.FileUtils;
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.Loader;
-import org.yaml.snakeyaml.nodes.NodeId;
-import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.*;
-import java.util.Map;
 import java.util.Collection;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 /**
  *
  */
-public class YamlToPomConverter
+public class YamlToXmlConverter extends AbstractConverter<YamlToXmlConverter>
 {
-    private final String tab;
-
-    public YamlToPomConverter(String tab)
-    {
-        this.tab = "    ";
-    }
-
-    public void convert(File yamlFile, File pomFile) throws MojoExecutionException
+    protected String buildTarget(File fromFile) throws IOException
     {
         Reader yamlReader = null;
-        Writer xmlWriter = null;
-        File pomTmpFile = null;
+        StringWriter xmlWriter = null;
         try
         {
-            pomTmpFile = File.createTempFile("pom", "xml");
-            xmlWriter = new FileWriter(pomTmpFile);
-            yamlReader = new FileReader(yamlFile);
-            Yaml yaml = buildYaml();
+            xmlWriter = new StringWriter();
+            yamlReader = new FileReader(fromFile);
+            Yaml yaml = YamlUtils.buildYaml();
             Object yamlPom = yaml.load(yamlReader);
 
             xmlWriter.write(
@@ -47,30 +34,25 @@ public class YamlToPomConverter
             convert((Map<String,Object>) yamlPom, tab, xmlWriter);
             xmlWriter.write("</project>\n");
         }
-        catch (FileNotFoundException e)
-        {
-            throw new MojoExecutionException("no file", e);
-        }
-        catch (IOException e)
-        {
-            throw new MojoExecutionException("something", e);
-        }
         finally
         {
             IOUtils.closeQuietly(yamlReader);
             IOUtils.closeQuietly(xmlWriter);
         }
-        if (pomTmpFile != null)
+        return xmlWriter.toString();
+    }
+
+    protected boolean isValidTargetContents(String text)
+    {
+        try
         {
-            try
-            {
-                FileUtils.copyFile(pomTmpFile, pomFile);
-                pomFile.setLastModified(yamlFile.lastModified());
-            }
-            catch (IOException e)
-            {
-                throw new MojoExecutionException("Cannot copy pom tmp", e);
-            }
+            new SAXReader().read(new StringReader(text));
+            return true;
+        }
+        catch (DocumentException e)
+        {
+            log.error("Generated XML is not valid", e);
+            return false;
         }
     }
 
@@ -137,35 +119,5 @@ public class YamlToPomConverter
             block.write(text);
         }
         return block.toString();
-    }
-
-    Yaml buildYaml()
-    {
-        Loader myLoader = new Loader();
-        Yaml yaml = new Yaml(myLoader);
-
-        // Don't let the YAML parser try to guess things.  Will screw up things like version numbers that look like
-        // 1.00 by converting them to an int "1.0"
-        myLoader.setResolver(new Resolver()
-        {
-            @Override
-            public String resolve(NodeId kind, String value, boolean implicit)
-            {
-                String tag = super.resolve(kind, value, implicit);
-                if (implicit)
-                {
-                    if (tag.equals("tag:yaml.org,2002:bool") ||
-                        tag.equals("tag:yaml.org,2002:float") ||
-                        tag.equals("tag:yaml.org,2002:int") ||
-                        tag.equals("tag:yaml.org,2002:timestamp") ||
-                        tag.equals("tag:yaml.org,2002:value"))
-                    {
-                        return "tag:yaml.org,2002:str";
-                    }
-                }
-                return tag;
-            }
-        });
-        return yaml;
     }
 }

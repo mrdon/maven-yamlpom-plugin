@@ -1,37 +1,51 @@
 package org.twdata.maven.yamlpom;
 
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.commons.io.IOUtils;
 import org.dom4j.*;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  *
  */
-public class PomToYamlConverter
+public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
 {
-    private final String tab;
     private final int MAX_LINE_LENGTH = 120;
     private final char[] INVALID_SCALAR_CHARACTERS = new char[] {':', '#', '[', ']', '{', '}', ',', '*', '\t'};
 
-    public PomToYamlConverter(String tab)
+
+    protected boolean isValidTargetContents(String yamlText)
     {
-        this.tab = tab;
+        Yaml yaml = YamlUtils.buildYaml();
+        try
+        {
+            Object obj = yaml.load(yamlText);
+            if (obj instanceof Map)
+            {
+                return true;
+            }
+        }
+        catch (RuntimeException ex)
+        {
+            log.error("Generated YAML is not valid", ex);
+        }
+        return false;
     }
 
-    public void convert(File pomFile, File yamlFile) throws MojoExecutionException
+    protected String buildTarget(File pomFile) throws IOException
     {
-        Writer yamlWriter = null;
+        StringWriter yamlWriter = null;
         Reader xmlReader = null;
         try
         {
             xmlReader = new FileReader(pomFile);
-            yamlWriter = new FileWriter(yamlFile);
+            yamlWriter = new StringWriter();
 
             Document doc = new SAXReader().read(xmlReader);
 
@@ -43,24 +57,17 @@ public class PomToYamlConverter
                 }
             }
         }
-        catch (FileNotFoundException e)
-        {
-            throw new MojoExecutionException("no file", e);
-        }
-        catch (IOException e)
-        {
-            throw new MojoExecutionException("something", e);
-        }
         catch (DocumentException e)
         {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            log.error(pomFile.getName() + " is not valid", e);
+            throw new RuntimeException(e);
         }
         finally
         {
             IOUtils.closeQuietly(yamlWriter);
             IOUtils.closeQuietly(xmlReader);
         }
-        yamlFile.setLastModified(pomFile.lastModified());
+        return yamlWriter.toString();
     }
 
     private void convert(Element element, String tabs, boolean isInList, Writer yamlWriter) throws IOException

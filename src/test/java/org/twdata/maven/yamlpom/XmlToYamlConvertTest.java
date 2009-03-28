@@ -10,7 +10,7 @@ import org.yaml.snakeyaml.Yaml;
 /**
  *
  */
-public class PomToYamlConvertTest extends AbstractConverterTestbase
+public class XmlToYamlConvertTest extends AbstractConverterTestbase
 {
     public void testConvertSimple() throws Exception
     {
@@ -55,9 +55,12 @@ public class PomToYamlConvertTest extends AbstractConverterTestbase
 
     private Map<String, Object> buildYaml(String path) throws Exception
     {
-        PomToYamlConverter converter = new PomToYamlConverter("  ");
         File yamlFile = File.createTempFile("pom", ".yaml");
-        converter.convert(pathToFile(path), yamlFile);
+        new XmlToYamlConverter()
+                .indentSpaces(2)
+                .fromFile(pathToFile(path))
+                .targetFile(yamlFile)
+                .convert();
 
         Yaml yaml = new Yaml();
         String yamlText = FileUtils.readFileToString(yamlFile);

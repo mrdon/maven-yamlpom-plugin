@@ -9,11 +9,11 @@ import java.net.URISyntaxException;
 /**
  *
  */
-public class AbstractConverterTestbase extends TestCase
+public abstract class AbstractConverterTestbase extends TestCase
 {
     protected static File pathToFile(String path) throws Exception
     {
-        URL url = YamlToXmlPomConverterTest.class.getResource(path);
+        URL url = YamlToXmlConverterTest.class.getResource(path);
         if (url == null)
         {
             throw new RuntimeException("Unable to locate "+path);
