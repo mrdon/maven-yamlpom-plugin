@@ -8,6 +8,10 @@ dependencies:
   - { groupId: SnakeYAML, artifactId: SnakeYAML, version: 1.1 }
   - { groupId: commons-io, artifactId: commons-io, version: 1.4 }
   - { groupId: dom4j, artifactId: dom4j, version: 1.4 }
+  - { groupId: org.apache.maven, artifactId: maven-model, version: 2.0.6 }
+  - { groupId: org.apache.maven, artifactId: maven-project, version: 2.0.6 }
+  - { groupId: org.apache.maven, artifactId: maven-settings, version: 2.0.6 }
+  - { groupId: org.apache.maven.scm, artifactId: maven-scm-api, version: 1.1 }
   - { groupId: junit, artifactId: junit, version: 3.8.1, scope: test }
   - { groupId: xmlunit, artifactId: xmlunit, version: 1.2, scope: test }
 build:
@@ -22,7 +26,7 @@ build:
     - artifactId: maven-release-plugin
       configuration : |
 
-        <preparationGoals>clean yamlpom:sync verify</preparationGoals>
+        <preparationGoals>clean yamlpom:sync yamlpom:prepare-release verify</preparationGoals>
 scm:
   connection: "scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git"
   url: "scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git"
