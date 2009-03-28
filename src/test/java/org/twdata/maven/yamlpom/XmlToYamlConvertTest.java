@@ -49,7 +49,7 @@ public class XmlToYamlConvertTest extends AbstractConverterTestbase
         Map plugin = (Map) ((List)((Map)data.get("build")).get("plugins")).get(0);
         String config = (String) plugin.get("configuration");
         assertNotNull(config);
-        System.out.println(config);
+        //System.out.println(config);
         assertTrue(config.contains("<tasks>"));
     }
 
@@ -64,7 +64,7 @@ public class XmlToYamlConvertTest extends AbstractConverterTestbase
 
         Yaml yaml = new Yaml();
         String yamlText = FileUtils.readFileToString(yamlFile);
-        System.out.println(yamlText);
+        //System.out.println(yamlText);
         Map<String,Object> data = (Map<String,Object>) yaml.load(yamlText);
         return data;
     }

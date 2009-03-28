@@ -4,21 +4,19 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.scm.provider.ScmProviderRepository;
+import org.apache.maven.scm.ScmException;
+import org.apache.maven.scm.ScmFileSet;
+import org.apache.maven.scm.manager.NoSuchScmProviderException;
+import org.apache.maven.scm.manager.ScmManager;
 import org.apache.maven.scm.repository.ScmRepository;
 import org.apache.maven.scm.repository.ScmRepositoryException;
-import org.apache.maven.scm.manager.ScmManager;
-import org.apache.maven.scm.manager.NoSuchScmProviderException;
-import org.apache.maven.scm.ScmFileSet;
-import org.apache.maven.scm.ScmException;
 
-import java.util.List;
-import java.util.Iterator;
-import java.util.Arrays;
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 
 /**
- * Adds YAML pom files to the commit
+ * Adds YAML pom files to the commit.  Meant to be used with the release plugin. 
  *
  * @goal release-prepare
  * @requiresProject true
@@ -91,20 +89,22 @@ public class AddYamlToCommitMojo extends AbstractMojo
         {
             repository = scmManager.makeScmRepository(sourceUrl);
             getLog().info("Adding yaml pom files to commit");
-            scmManager.add(repository, new ScmFileSet(basedir, Arrays.asList(new File(yamlPomName), new File(syncFileName))));
+            getLog().info("Adding " + new File(basedir, yamlPomName));
+            getLog().info("Adding " + new File(basedir, syncFileName));
+            scmManager.add(repository, new ScmFileSet(basedir, Arrays.asList(new File(basedir, yamlPomName), new File(basedir, syncFileName))));
 
         }
         catch (ScmRepositoryException e)
         {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new MojoExecutionException("Unable to add YAML files to repository", e);
         }
         catch (NoSuchScmProviderException e)
         {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new MojoExecutionException("No such scm provider", e);
         }
         catch (ScmException e)
         {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            throw new MojoExecutionException("General SCM failure", e);
         }
 
 

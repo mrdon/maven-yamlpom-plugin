@@ -1,6 +1,6 @@
 groupId: org.twdata.maven
 artifactId: maven-yamlpom-plugin
-version: 0.1.1
+version: 0.2-SNAPSHOT
 packaging: maven-plugin
 name: YAML POM Plugin
 dependencies:
@@ -12,6 +12,8 @@ dependencies:
   - { groupId: org.apache.maven, artifactId: maven-project, version: 2.0.6 }
   - { groupId: org.apache.maven, artifactId: maven-settings, version: 2.0.6 }
   - { groupId: org.apache.maven.scm, artifactId: maven-scm-api, version: 1.1 }
+  - { groupId: org.apache.maven.scm, artifactId: maven-scm-manager-plexus, version: 1.1, scope: runtime }
+  - { groupId: org.apache.maven.scm, artifactId: maven-scm-providers-standard, version: 1.1, type: pom, scope: runtime }
   - { groupId: junit, artifactId: junit, version: 3.8.1, scope: test }
   - { groupId: xmlunit, artifactId: xmlunit, version: 1.2, scope: test }
 build:
@@ -23,10 +25,14 @@ build:
 
         <source>1.5</source>
         <target>1.5</target>
+    - groupId: org.twdata.maven
+      artifactId: maven-yamlpom-plugin
+      executions:
+        - goals: [ sync ]
     - artifactId: maven-release-plugin
       configuration : |
 
-        <preparationGoals>clean yamlpom:sync yamlpom:release-prepare verify</preparationGoals>
+        <preparationGoals>clean yamlpom:sync yamlpom:prepare-release verify</preparationGoals>
 scm:
   connection: "scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git"
   url: "scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git"
