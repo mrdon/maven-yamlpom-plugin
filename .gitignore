@@ -3,3 +3,5 @@ target
 *.ipr
 *.iws
 *~
+pom.yml
+.pom.yml
