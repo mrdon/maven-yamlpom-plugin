@@ -1,6 +1,6 @@
 groupId: org.twdata.maven
 artifactId: maven-yamlpom-plugin
-version: 0.2-SNAPSHOT
+version: 0.1.1
 packaging: maven-plugin
 name: YAML POM Plugin
 dependencies:
@@ -26,7 +26,7 @@ build:
     - artifactId: maven-release-plugin
       configuration : |
 
-        <preparationGoals>clean yamlpom:sync yamlpom:prepare-release verify</preparationGoals>
+        <preparationGoals>clean yamlpom:sync yamlpom:release-prepare verify</preparationGoals>
 scm:
   connection: "scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git"
   url: "scm:git:git://github.com/mrdon/maven-yamlpom-plugin.git"
