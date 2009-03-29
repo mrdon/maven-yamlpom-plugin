@@ -75,6 +75,13 @@ public class SyncPomMojo extends AbstractMojo
      */
     private boolean failIfCannotSync = true;
 
+    /**
+     * Forces a sync into a particular target format.  Can be "auto", "xml", or "yaml".
+     *
+     * @parameter expression="${yamlpom.target}"
+     */
+    private String target = "auto";
+
 
 
     public void execute() throws MojoExecutionException
@@ -86,9 +93,11 @@ public class SyncPomMojo extends AbstractMojo
 
         SyncManager syncManager = new SyncManager(xmlFile, yamlFile, syncFile);
 
+
+
         try
         {
-            switch (syncManager.determineFormatToTarget())
+            switch (determineTarget(syncManager))
             {
                 case YAML:
                     getLog().info("Converting "+xmlFile.getName() + " into " + yamlFile.getName());
@@ -126,6 +135,23 @@ public class SyncPomMojo extends AbstractMojo
         {
             throw new MojoExecutionException("Unable to create or parse a valid format: \n" + e.getText(), e);
         }
+    }
+
+    private SyncManager.FormatToTarget determineTarget(SyncManager syncManager)
+    {
+        if (target.equalsIgnoreCase("yaml") || target.equalsIgnoreCase("yml"))
+        {
+            return SyncManager.FormatToTarget.YAML;
+        }
+        else if (target.equalsIgnoreCase("xml"))
+        {
+            return SyncManager.FormatToTarget.XML;
+        }
+        else
+        {
+            return syncManager.determineFormatToTarget();
+        }
+
     }
 
     private void sync(File xmlFile, File yamlFile, File syncFile, boolean xmlFirst) throws IOException, InvalidFormatException
