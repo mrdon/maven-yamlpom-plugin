@@ -18,6 +18,8 @@ package org.twdata.maven.yamlpom;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import static org.twdata.maven.yamlpom.ConverterBuilder.convertYamlToXml;
+import static org.twdata.maven.yamlpom.ConverterBuilder.convertXmlToYaml;
 
 import java.io.*;
 
@@ -120,41 +122,41 @@ public class SyncPomMojo extends AbstractMojo
         {
             throw new MojoExecutionException("Error syncing YAML pom", e);
         }
+        catch (InvalidFormatException e)
+        {
+            throw new MojoExecutionException("Unable to create or parse a valid format: \n" + e.getText(), e);
+        }
     }
 
-    private void sync(File xmlFile, File yamlFile, File syncFile, boolean xmlFirst) throws IOException
+    private void sync(File xmlFile, File yamlFile, File syncFile, boolean xmlFirst) throws IOException, InvalidFormatException
     {
         if (xmlFirst)
         {
-            new YamlToXmlConverter()
+            convertYamlToXml()
                 .indentSpaces(xmlIndent)
                 .fromFile(yamlFile)
-                .targetFile(xmlFile)
-                .syncFile(syncFile)
+                .toFile(xmlFile)
                 .logWith(getLog())
                 .convert();
-            new XmlToYamlConverter()
+            convertXmlToYaml()
                 .indentSpaces(yamlIndent)
                 .fromFile(xmlFile)
-                .targetFile(yamlFile)
-                .syncFile(syncFile)
+                .toFile(yamlFile)
                 .logWith(getLog())
                 .convert();
         }
         else
         {
-            new XmlToYamlConverter()
+            convertXmlToYaml()
                 .indentSpaces(yamlIndent)
                 .fromFile(xmlFile)
-                .targetFile(yamlFile)
-                .syncFile(syncFile)
+                .toFile(yamlFile)
                 .logWith(getLog())
                 .convert();
-            new YamlToXmlConverter()
+            convertYamlToXml()
                 .indentSpaces(xmlIndent)
                 .fromFile(yamlFile)
-                .targetFile(xmlFile)
-                .syncFile(syncFile)
+                .toFile(xmlFile)
                 .logWith(getLog())
                 .convert();
         }

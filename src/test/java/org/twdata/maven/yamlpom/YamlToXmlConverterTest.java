@@ -36,14 +36,10 @@ public class YamlToXmlConverterTest extends AbstractConverterTestbase
 
     private void convertTest(String path, String... xpathList) throws Exception
     {
-        File pom = File.createTempFile("pom", ".xml");
-        new YamlToXmlConverter()
-                .indentSpaces(2)
-                .fromFile(pathToFile(path))
-                .targetFile(pom)
-                .convert();
+        ConverterOptions opt = new ConverterOptions().indent("  ");
+        String text = new YamlToXmlConverter().convert(pathToReader(path), opt);
 
-        Document doc = DocumentHelper.parseText(FileUtils.readFileToString(pom));
+        Document doc = DocumentHelper.parseText(text);
         for (final String xp : xpathList)
         {
             final XPath xpath = DocumentHelper.createXPath(xp);

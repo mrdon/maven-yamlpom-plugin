@@ -1,11 +1,9 @@
 package org.twdata.maven.yamlpom;
 
-import java.io.File;
-import java.util.Map;
-import java.util.List;
-
-import org.apache.commons.io.FileUtils;
 import org.yaml.snakeyaml.Yaml;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -42,9 +40,9 @@ public class XmlToYamlConvertTest extends AbstractConverterTestbase
         assertEquals("foo", ((List)data.get("properties")).get(0));
     }
 
-    public void testConvertAttributes() throws Exception
+    public void testConvertConfigAsXml() throws Exception
     {
-        Map<String, Object> data = buildYaml("/pom.attrs.xml");
+        Map<String, Object> data = buildYaml("/pom.config.xml");
 
         Map plugin = (Map) ((List)((Map)data.get("build")).get("plugins")).get(0);
         String config = (String) plugin.get("configuration");
@@ -53,17 +51,36 @@ public class XmlToYamlConvertTest extends AbstractConverterTestbase
         assertTrue(config.contains("<tasks>"));
     }
 
+    public void testConvertConfigAsYaml() throws Exception
+    {
+        Map<String, Object> data = buildYaml("/pom.config.xml");
+
+        Map plugin = (Map) ((List)((Map)data.get("build")).get("plugins")).get(1);
+        Object config = plugin.get("configuration");
+        assertNotNull(config);
+        assertTrue(config instanceof Map);
+        assertEquals("1.5", ((Map<String,String>)config).get("source"));
+        assertEquals("1.5", ((Map<String,String>)config).get("target"));
+    }
+
+    public void testConvertConfigAsYamlWithSingleAttribute() throws Exception
+    {
+        Map<String, Object> data = buildYaml("/pom.config.xml");
+
+        Map plugin = (Map) ((List)((Map)data.get("build")).get("plugins")).get(2);
+        Object config = plugin.get("configuration");
+        assertNotNull(config);
+        assertTrue(config instanceof String);
+        //System.out.println(config);
+        assertTrue(config.toString().contains("implementation=\"org.apache"));
+    }
+
     private Map<String, Object> buildYaml(String path) throws Exception
     {
-        File yamlFile = File.createTempFile("pom", ".yaml");
-        new XmlToYamlConverter()
-                .indentSpaces(2)
-                .fromFile(pathToFile(path))
-                .targetFile(yamlFile)
-                .convert();
+        ConverterOptions opt = new ConverterOptions().indent("  ");
+        String yamlText = new XmlToYamlConverter().convert(pathToReader(path), opt);
 
-        Yaml yaml = new Yaml();
-        String yamlText = FileUtils.readFileToString(yamlFile);
+        Yaml yaml = YamlUtils.buildYaml();
         //System.out.println(yamlText);
         Map<String,Object> data = (Map<String,Object>) yaml.load(yamlText);
         return data;

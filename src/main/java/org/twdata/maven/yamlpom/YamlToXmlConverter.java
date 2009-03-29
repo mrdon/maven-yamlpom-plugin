@@ -12,18 +12,17 @@ import java.util.Map;
 /**
  *
  */
-public class YamlToXmlConverter extends AbstractConverter<YamlToXmlConverter>
+public class YamlToXmlConverter implements Converter
 {
-    protected String buildTarget(File fromFile) throws IOException
+    public String convert(Reader from, ConverterOptions options) throws InvalidFormatException, IOException
     {
-        Reader yamlReader = null;
         StringWriter xmlWriter = null;
+        String tab = options.getIndent();
         try
         {
             xmlWriter = new StringWriter();
-            yamlReader = new FileReader(fromFile);
             Yaml yaml = YamlUtils.buildYaml();
-            Object yamlPom = yaml.load(yamlReader);
+            Object yamlPom = yaml.load(from);
 
             xmlWriter.write(
                     "<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n" +
@@ -31,32 +30,32 @@ public class YamlToXmlConverter extends AbstractConverter<YamlToXmlConverter>
                     tab + tab + "xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd\">\n" +
                     tab + "<modelVersion>4.0.0</modelVersion>\n");
 
-            convert((Map<String,Object>) yamlPom, tab, xmlWriter);
+            convert((Map<String,Object>) yamlPom, tab, xmlWriter, options.getIndent());
             xmlWriter.write("</project>\n");
         }
         finally
         {
-            IOUtils.closeQuietly(yamlReader);
             IOUtils.closeQuietly(xmlWriter);
         }
-        return xmlWriter.toString();
+
+        String text = xmlWriter.toString();
+        validateTargetContents(text);
+        return text;
     }
 
-    protected boolean isValidTargetContents(String text)
+    private void validateTargetContents(String text) throws InvalidFormatException
     {
         try
         {
             new SAXReader().read(new StringReader(text));
-            return true;
         }
         catch (DocumentException e)
         {
-            log.error("Generated XML is not valid", e);
-            return false;
+            throw new InvalidFormatException("Target XML is not well-formed", text, e);
         }
     }
 
-    private void convert(Map<String,Object> map, String tabs, Writer writer) throws IOException
+    private void convert(Map<String,Object> map, String tabs, Writer writer, String tab) throws IOException
     {
         for (Map.Entry<String,Object> entry : map.entrySet())
         {
@@ -66,7 +65,7 @@ public class YamlToXmlConverter extends AbstractConverter<YamlToXmlConverter>
             {
                 writer.write(tabs);
                 writer.write("<" + key + ">\n");
-                convert((Map<String,Object>)value, tabs + tab, writer);
+                convert((Map<String,Object>)value, tabs + tab, writer, tab);
                 writer.write(tabs);
                 writer.write("</" + key + ">\n");
             }
@@ -79,7 +78,7 @@ public class YamlToXmlConverter extends AbstractConverter<YamlToXmlConverter>
                     if (item instanceof Map)
                     {
                         writer.write(tabs + tab + "<" + singleName + ">\n");
-                        convert((Map<String,Object>) item, tabs + tab + tab, writer);
+                        convert((Map<String,Object>) item, tabs + tab + tab, writer, tab);
                         writer.write(tabs + tab + "</" + singleName + ">\n");
                     }
                     else
@@ -91,7 +90,7 @@ public class YamlToXmlConverter extends AbstractConverter<YamlToXmlConverter>
             }
             else
             {
-                String text = indent(value.toString(), tabs + tab);
+                String text = indent((value != null ? value.toString() : ""), tabs + tab);
                 if (text.endsWith("\n"))
                 {
                     text += tabs;

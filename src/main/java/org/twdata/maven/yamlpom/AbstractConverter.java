@@ -2,9 +2,12 @@ package org.twdata.maven.yamlpom;
 
 import org.apache.maven.plugin.logging.Log;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.FileReader;
 
 /**
  *
@@ -13,7 +16,6 @@ public abstract class AbstractConverter<T extends AbstractConverter>
 {
     private File toFile;
     private File fromFile;
-    private File syncFile;
     protected String tab;
     protected Log log;
 
@@ -26,12 +28,6 @@ public abstract class AbstractConverter<T extends AbstractConverter>
     public T fromFile(File fromFile)
     {
         this.fromFile = fromFile;
-        return (T) this;
-    }
-
-    public T syncFile(File syncFile)
-    {
-        this.syncFile = syncFile;
         return (T) this;
     }
 
@@ -54,18 +50,27 @@ public abstract class AbstractConverter<T extends AbstractConverter>
 
     public void convert() throws IOException
     {
-        String text = buildTarget(fromFile);
-        if (isValidTargetContents(text))
+        Reader reader = null;
+        try
         {
-            FileUtils.writeStringToFile(toFile, text);
+            reader = new FileReader(fromFile);
+            String text = buildTarget(reader);
+            if (isValidTargetContents(text))
+            {
+                FileUtils.writeStringToFile(toFile, text);
+            }
+            else
+            {
+                log.error("Cannot generate a valid document for " + toFile);
+            }
         }
-        else
+        finally
         {
-            log.error("Cannot generate a valid document for " + toFile);
+            IOUtils.closeQuietly(reader);
         }
     }
 
-    protected abstract String buildTarget(File fromFile) throws IOException;
+    protected abstract String buildTarget(Reader fromFile) throws IOException;
 
     protected abstract boolean isValidTargetContents(String text);
 

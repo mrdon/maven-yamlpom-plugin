@@ -1,76 +1,70 @@
 package org.twdata.maven.yamlpom;
 
-import org.apache.commons.io.IOUtils;
 import org.dom4j.*;
-import org.dom4j.io.SAXReader;
 import org.dom4j.io.OutputFormat;
+import org.dom4j.io.SAXReader;
 import org.dom4j.io.XMLWriter;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
  *
  */
-public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
+public class XmlToYamlConverter implements Converter
 {
     private final int MAX_LINE_LENGTH = 120;
     private final char[] INVALID_SCALAR_CHARACTERS = new char[] {':', '#', '[', ']', '{', '}', ',', '*', '\t'};
 
 
-    protected boolean isValidTargetContents(String yamlText)
+    private void validateTargetContents(String yamlText) throws InvalidFormatException
     {
         Yaml yaml = YamlUtils.buildYaml();
+        Object obj = null;
         try
         {
-            Object obj = yaml.load(yamlText);
-            if (obj instanceof Map)
-            {
-                return true;
-            }
+            obj = yaml.load(yamlText);
         }
         catch (RuntimeException ex)
         {
-            log.error("Generated YAML is not valid: \n" + yamlText, ex);
+            throw new InvalidFormatException("Invalid YAML", yamlText, ex);
         }
-        return false;
+
+        if (!(obj instanceof Map))
+        {
+            throw new InvalidFormatException("YAML file not a map", yamlText);
+        }
     }
 
-    protected String buildTarget(File pomFile) throws IOException
+    public String convert(Reader xmlReader, ConverterOptions options) throws InvalidFormatException, IOException
     {
-        StringWriter yamlWriter = null;
-        Reader xmlReader = null;
+        StringWriter yamlWriter = new StringWriter();
+
         try
         {
-            xmlReader = new FileReader(pomFile);
-            yamlWriter = new StringWriter();
-
             Document doc = new SAXReader().read(xmlReader);
 
             for (Iterator it = doc.getRootElement().elementIterator(); it.hasNext(); ) {
                 Element element = (Element) it.next();
                 if (!"modelVersion".equals(element.getName()))
                 {
-                    convert(element, "", false, yamlWriter);
+                    convert(element, "", false, yamlWriter, options.getIndent());
                 }
             }
         }
         catch (DocumentException e)
         {
-            log.error(pomFile.getName() + " is not valid", e);
-            throw new RuntimeException(e);
+            throw new InvalidFormatException("POM XML is not valid", null, e);
         }
-        finally
-        {
-            IOUtils.closeQuietly(yamlWriter);
-            IOUtils.closeQuietly(xmlReader);
-        }
-        return yamlWriter.toString();
+        String text = yamlWriter.toString();
+        validateTargetContents(text);
+        return text;
     }
 
-    private void convert(Element element, String tabs, boolean isInList, Writer yamlWriter) throws IOException
+    private void convert(Element element, String tabs, boolean isInList, Writer yamlWriter, String tab) throws IOException
     {
         if (element != null)
         {
@@ -79,16 +73,17 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
 
             if ("configuration".equals(name))
             {
-
-                StringWriter configWriter = new StringWriter();
-                for (Iterator i = element.elementIterator(); i.hasNext(); )
+                if (isConfigurationNotYamlSafe(element, tabs, tab))
                 {
-                    configWriter.append(elementToBlockString((Element) i.next()));
+                    yamlWriter.write(tabs + "configuration : |\n");
+                    StringWriter blockWriter = new StringWriter();
+                    for (Iterator i = element.elementIterator(); i.hasNext(); )
+                    {
+                        blockWriter.append(elementToBlockString((Element) i.next()));
+                    }
+                    yamlWriter.write(indent(blockWriter.toString(), tabs + tab));
+                    return;
                 }
-                yamlWriter.write(tabs + "configuration : |\n");
-                yamlWriter.write(indent(configWriter.toString(), tabs + tab));
-
-                return;
             }
 
             // is scalar
@@ -125,7 +120,7 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
                             for (Iterator it = list.elementIterator(); it.hasNext(); )
                             {
                                 Element listItem = (Element)it.next();
-                                convert(listItem, (!isFirst ? "  " : "")  + tabs + tab, isFirst, yamlWriter);
+                                convert(listItem, (!isFirst ? "  " : "")  + tabs + tab, isFirst, yamlWriter, tab);
                                 isFirst = false;
                             }
                         }
@@ -137,9 +132,34 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
                 yamlWriter.write(tabs + prefix + name + ":\n");
                 for (Iterator i = element.elementIterator(); i.hasNext(); )
                 {
-                    convert((Element) i.next(), tabs + tab, false, yamlWriter);
+                    convert((Element) i.next(), tabs + tab, false, yamlWriter, tab);
                 }
             }
+        }
+    }
+
+    private boolean isConfigurationNotYamlSafe(Element element, String tabs, String tab) throws IOException
+    {
+        StringWriter configWriter = new StringWriter();
+
+        element.setName("testing");
+        convert(element, tabs + tab, false, configWriter, tab);
+
+        try
+        {
+            String configAsXml = new YamlToXmlConverter().convert(new StringReader(configWriter.toString()), new ConverterOptions());
+            Document doc = DocumentHelper.parseText(configAsXml);
+            Element config = doc.getRootElement().element("testing");
+            element.setName("configuration");
+            return !areElementsEqual(element, config);
+        }
+        catch (InvalidFormatException e)
+        {
+            return true;
+        }
+        catch (DocumentException e)
+        {
+            return true;
         }
     }
 
@@ -181,6 +201,52 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
         {
             removeNamespaceFromElement((Element)i.next());
         }
+    }
+
+    static boolean areElementsEqual(Element e1, Element e2)
+    {
+        if (e1.attributeCount() == e2.attributeCount())
+        {
+            for (int x=0; x<e1.attributeCount(); x++)
+            {
+                Attribute a1 = e1.attribute(x);
+                Attribute a2 = e2.attribute(x);
+                if (!a1.getName().equals(a2.getName()) || !a1.getValue().equals(a2.getValue()))
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        String text1 = e1.getText() == null ? "" : e1.getText().trim();
+        String text2 = e2.getText() == null ? "" : e2.getText().trim();
+
+        if (!text1.equals(text2))
+        {
+            return false;
+        }
+
+        List<Element> kids1 = e1.elements();
+        List<Element> kids2 = e2.elements();
+        if (kids1.size() == kids2.size())
+        {
+            for (int x=0; x<kids1.size(); x++)
+            {
+                if (!areElementsEqual(kids1.get(x), kids2.get(x)))
+                {
+                    return false;
+                }
+            }
+        }
+        else
+        {
+            return false;
+        }
+        return true;
     }
 
 
@@ -272,4 +338,5 @@ public class XmlToYamlConverter extends AbstractConverter<XmlToYamlConverter>
                 (name.endsWith("ies") && !element.elements(name.substring(0, name.length() - 3) + "y").isEmpty())
         );
     }
+
 }

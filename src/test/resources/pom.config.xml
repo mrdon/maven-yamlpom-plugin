@@ -40,6 +40,30 @@
                     </tasks>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.5</source>
+                    <target>1.5</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>1.2</version>
+                <configuration>
+                    <createDependencyReducedPom>true</createDependencyReducedPom>
+                    <artifactSet>
+                      <includes>
+                        <include>SnakeYAML:SnakeYAML</include>
+                      </includes>
+                    </artifactSet>
+                    <transformers>
+                      <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
+                    </transformers>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 </project>
