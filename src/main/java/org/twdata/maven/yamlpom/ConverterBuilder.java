@@ -91,7 +91,7 @@ public class ConverterBuilder
             }
 
             String text = converter.convert(reader, options);
-            if (text != null)
+            if (text != null && text.trim().length() > 0)
             {
                 IOUtils.write(text, writer);
             }
