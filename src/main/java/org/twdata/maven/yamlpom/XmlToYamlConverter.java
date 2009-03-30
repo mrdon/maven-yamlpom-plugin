@@ -30,6 +30,7 @@ public class XmlToYamlConverter implements Converter
         }
         catch (RuntimeException ex)
         {
+            System.out.println("yaml:"+yamlText);
             throw new InvalidFormatException("Invalid YAML", yamlText, ex);
         }
 
@@ -75,13 +76,13 @@ public class XmlToYamlConverter implements Converter
             {
                 if (isConfigurationNotYamlSafe(element, tabs, tab))
                 {
-                    yamlWriter.write(tabs + "configuration : |\n");
+                    yamlWriter.write(tabs + prefix + "configuration : |\n");
                     StringWriter blockWriter = new StringWriter();
                     for (Iterator i = element.elementIterator(); i.hasNext(); )
                     {
                         blockWriter.append(elementToBlockString((Element) i.next()));
                     }
-                    yamlWriter.write(indent(blockWriter.toString(), tabs + tab));
+                    yamlWriter.write(indent(blockWriter.toString(), (isInList ? "  " : "") + tabs + tab));
                     return;
                 }
             }
@@ -132,7 +133,7 @@ public class XmlToYamlConverter implements Converter
                 yamlWriter.write(tabs + prefix + name + ":\n");
                 for (Iterator i = element.elementIterator(); i.hasNext(); )
                 {
-                    convert((Element) i.next(), tabs + tab, false, yamlWriter, tab);
+                    convert((Element) i.next(), (isInList ? "  " : "") + tabs + tab, false, yamlWriter, tab);
                 }
             }
         }

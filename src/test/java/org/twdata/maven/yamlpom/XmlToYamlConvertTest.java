@@ -75,13 +75,53 @@ public class XmlToYamlConvertTest extends AbstractConverterTestbase
         assertTrue(config.toString().contains("implementation=\"org.apache"));
     }
 
+    public void testConvertConfigAsYamlWithConfigAsFirstElement() throws Exception
+    {
+        Map<String, Object> data = buildYaml("/pom.config.xml");
+
+        Map plugin = (Map) ((List)((Map)data.get("build")).get("plugins")).get(3);
+        Object exec = ((List<Object>)plugin.get("executions")).get(0);
+        assertNotNull(exec);
+        assertTrue(exec instanceof Map);
+        //System.out.println(config);
+        Object config = ((Map<String,Object>)exec).get("configuration");
+        assertNotNull(config);
+        assertTrue(config instanceof Map);
+        assertEquals("true", ((Map<String,String>)config).get("createDependencyReducedPom"));
+
+        Object goals = ((Map<String,Object>)exec).get("goals");
+        assertNotNull(goals);
+        assertEquals(1, ((List<String>)goals).size());
+        assertEquals("go", ((List<String>)goals).get(0));
+    }
+
+    public void testConvertConfigAsStringWithConfigAsFirstElement() throws Exception
+    {
+        Map<String, Object> data = buildYaml("/pom.config.xml");
+
+        Map plugin = (Map) ((List)((Map)data.get("build")).get("plugins")).get(4);
+        Object exec = ((List<Object>)plugin.get("executions")).get(0);
+        assertNotNull(exec);
+        assertTrue(exec instanceof Map);
+        //System.out.println(config);
+        Object config = ((Map<String,Object>)exec).get("configuration");
+        assertNotNull(config);
+        assertTrue(config instanceof String);
+        assertTrue(config.toString().contains("implementation=\"org.apache"));
+
+        Object goals = ((Map<String,Object>)exec).get("goals");
+        assertNotNull(goals);
+        assertEquals(1, ((List<String>)goals).size());
+        assertEquals("go", ((List<String>)goals).get(0));
+    }
+
     private Map<String, Object> buildYaml(String path) throws Exception
     {
         ConverterOptions opt = new ConverterOptions().indent("  ");
         String yamlText = new XmlToYamlConverter().convert(pathToReader(path), opt);
 
         Yaml yaml = YamlUtils.buildYaml();
-        //System.out.println(yamlText);
+        System.out.println(yamlText);
         Map<String,Object> data = (Map<String,Object>) yaml.load(yamlText);
         return data;
     }
