@@ -82,14 +82,23 @@ public class SyncPomMojo extends AbstractMojo
      */
     private String target = "auto";
 
+    /**
+     * The base directory of the project
+     *
+     * @parameter expression="${basedir}
+     * @readonly
+     * @required
+     * @throws MojoExecutionException
+     */
+    private File basedir;
 
 
     public void execute() throws MojoExecutionException
     {
-        File xmlFile = new File("pom.xml");
+        File xmlFile = new File(basedir, "pom.xml");
 
-        File yamlFile = new File(yamlPomName);
-        File syncFile = new File(syncFileName);
+        File yamlFile = new File(basedir, yamlPomName);
+        File syncFile = new File(basedir, syncFileName);
 
         SyncManager syncManager = new SyncManager(xmlFile, yamlFile, syncFile);
 
@@ -124,7 +133,7 @@ public class SyncPomMojo extends AbstractMojo
                     if (failIfCannotSync)
                         throw new MojoExecutionException("Unable to automatically sync");
                     else
-                        getLog().error("Unable to automatically sync");
+                        getLog().error("Unable to automatically sync due to changes to both XML and YAML since last sync.");
             }
         }
         catch (IOException e)

@@ -121,7 +121,7 @@ public class XmlToYamlConvertTest extends AbstractConverterTestbase
         String yamlText = new XmlToYamlConverter().convert(pathToReader(path), opt);
 
         Yaml yaml = YamlUtils.buildYaml();
-        //System.out.println(yamlText);
+        System.out.println(yamlText);
         Map<String,Object> data = (Map<String,Object>) yaml.load(yamlText);
         return data;
     }

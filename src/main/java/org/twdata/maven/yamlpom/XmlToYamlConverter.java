@@ -45,6 +45,10 @@ public class XmlToYamlConverter implements Converter
 
         try
         {
+            SAXReader sax = new SAXReader();
+            sax.setStripWhitespaceText(false);
+            sax.setMergeAdjacentText(false);
+            sax.setIgnoreComments(false);
             Document doc = new SAXReader().read(xmlReader);
 
             for (Iterator it = doc.getRootElement().elementIterator(); it.hasNext(); ) {
@@ -81,7 +85,7 @@ public class XmlToYamlConverter implements Converter
                     {
                         blockWriter.append(elementToBlockString((Element) i.next()));
                     }
-                    yamlWriter.write(indent(blockWriter.toString(), (isInList ? "  " : "") + tabs + tab));
+                    yamlWriter.write(indent(blockWriter.toString(), (isInList ? "  " : "") + tabs + tab, tab));
                     return;
                 }
             }
@@ -161,6 +165,10 @@ public class XmlToYamlConverter implements Converter
         {
             return true;
         }
+        catch (RuntimeException ex)
+        {
+            return true;
+        }
     }
 
     static String elementToBlockString(Element root)
@@ -172,25 +180,54 @@ public class XmlToYamlConverter implements Converter
         final StringWriter swriter = new StringWriter();
         final OutputFormat outformat = OutputFormat.createPrettyPrint();
         outformat.setSuppressDeclaration(true);
-        outformat.setNewLineAfterNTags(1);
-        outformat.setNewlines(true);
+        outformat.setNewLineAfterNTags(0);
+        outformat.setNewlines(false);
+        outformat.setPadText(false);
+        outformat.setTrimText(false);
         final XMLWriter writer = new XMLWriter(swriter, outformat);
         writer.write(root);
         writer.flush();
         return swriter.toString();
     }
 
-    static String indent(String text, String indent)
+    static String indent(String text, String indent, String tab)
     {
+        int oldIndent = 0;
         StringWriter block = new StringWriter();
         String[] lines = text.split("\n");
         for (String line : lines)
         {
             block.write(indent);
+            if (oldIndent == 0)
+            {
+                oldIndent = firstNonSpace(line);
+            }
+            if (oldIndent > 0 && firstNonSpace(line) >= oldIndent)
+            {
+
+                line = tab + line.substring(oldIndent);
+            }
             block.write(line);
             block.write("\n");
         }
         return block.toString();
+    }
+
+    static int firstNonSpace(String text)
+    {
+        int pos = 0;
+        for (int x=0; x<text.length(); x++)
+        {
+            if (text.charAt(x) == ' ')
+            {
+                pos++;
+            }
+            else
+            {
+                break;
+            }
+        }
+        return pos;
     }
 
 
