@@ -30,7 +30,6 @@ public class XmlToYamlConverter implements Converter
         }
         catch (RuntimeException ex)
         {
-            System.out.println("yaml:"+yamlText);
             throw new InvalidFormatException("Invalid YAML", yamlText, ex);
         }
 
