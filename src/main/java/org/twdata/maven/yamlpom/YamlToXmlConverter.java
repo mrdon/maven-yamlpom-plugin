@@ -25,9 +25,9 @@ public class YamlToXmlConverter implements Converter
             Object yamlPom = yaml.load(from);
 
             xmlWriter.write(
-                    "<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\n" +
-                    tab + tab + "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                    tab + tab + "xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd\">\n" +
+                    "<project xmlns=\"http://maven.apache.org/POM/4.0.0\" " +
+                    "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                    "xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd\">\n" +
                     tab + "<modelVersion>4.0.0</modelVersion>\n");
 
             convert((Map<String,Object>) yamlPom, tab, xmlWriter, options.getIndent());

@@ -182,7 +182,7 @@ public class XmlToYamlConverter implements Converter
         outformat.setSuppressDeclaration(true);
         outformat.setNewLineAfterNTags(0);
         outformat.setNewlines(false);
-        outformat.setPadText(false);
+        outformat.setPadText(true);
         outformat.setTrimText(false);
         final XMLWriter writer = new XMLWriter(swriter, outformat);
         writer.write(root);
@@ -202,10 +202,17 @@ public class XmlToYamlConverter implements Converter
             {
                 oldIndent = firstNonSpace(line);
             }
-            if (oldIndent > 0 && firstNonSpace(line) >= oldIndent)
+            if (oldIndent > 0)
             {
-
-                line = tab + line.substring(oldIndent);
+                int firstNonSpace = firstNonSpace(line);
+                if (firstNonSpace >= oldIndent)
+                {
+                    line = tab + line.substring(oldIndent);
+                }
+                else
+                {
+                    line = line.substring(firstNonSpace);
+                }
             }
             block.write(line);
             block.write("\n");
