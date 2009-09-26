@@ -171,13 +171,13 @@ public class SyncPomMojo extends AbstractMojo
                 .indentSpaces(xmlIndent)
                 .fromFile(yamlFile)
                 .toFile(xmlFile)
-                .logWith(getLog())
+                .logWith(new MavenLog(getLog()))
                 .convert();
             convertXmlToYaml()
                 .indentSpaces(yamlIndent)
                 .fromFile(xmlFile)
                 .toFile(yamlFile)
-                .logWith(getLog())
+                .logWith(new MavenLog(getLog()))
                 .convert();
         }
         else
@@ -186,13 +186,13 @@ public class SyncPomMojo extends AbstractMojo
                 .indentSpaces(yamlIndent)
                 .fromFile(xmlFile)
                 .toFile(yamlFile)
-                .logWith(getLog())
+                .logWith(new MavenLog(getLog()))
                 .convert();
             convertYamlToXml()
                 .indentSpaces(xmlIndent)
                 .fromFile(yamlFile)
                 .toFile(xmlFile)
-                .logWith(getLog())
+                .logWith(new MavenLog(getLog()))
                 .convert();
         }
     }

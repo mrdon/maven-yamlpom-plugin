@@ -1,7 +1,5 @@
 package org.twdata.maven.yamlpom;
 
-import org.apache.maven.plugin.logging.Log;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.*;

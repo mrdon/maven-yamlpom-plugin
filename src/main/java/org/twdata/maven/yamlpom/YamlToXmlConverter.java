@@ -1,10 +1,14 @@
 package org.twdata.maven.yamlpom;
 
 import org.apache.commons.io.IOUtils;
-import org.dom4j.DocumentException;
-import org.dom4j.io.SAXReader;
 import org.yaml.snakeyaml.Yaml;
+import org.dom4j.DocumentException;
+import org.xml.sax.SAXException;
+import org.xml.sax.InputSource;
+import org.xml.sax.helpers.DefaultHandler;
 
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.util.Collection;
 import java.util.Map;
@@ -47,10 +51,12 @@ public class YamlToXmlConverter implements Converter
     {
         try
         {
-            new SAXReader().read(new StringReader(text));
-        }
-        catch (DocumentException e)
-        {
+            SAXParserFactory.newInstance().newSAXParser().parse(new InputSource(new StringReader(text)), new DefaultHandler());
+        } catch (SAXException e) {
+            throw new InvalidFormatException("Target XML is not well-formed", text, e);
+        } catch (ParserConfigurationException e) {
+            throw new InvalidFormatException("Target XML is not well-formed", text, e);
+        } catch (IOException e) {
             throw new InvalidFormatException("Target XML is not well-formed", text, e);
         }
     }
@@ -83,7 +89,7 @@ public class YamlToXmlConverter implements Converter
                     }
                     else
                     {
-                        writer.write(tabs + tab + "<" + singleName + ">" + item + "</" + singleName + ">\n");
+                        writer.write(tabs + tab + "<" + singleName + ">" + text(item) + "</" + singleName + ">\n");
                     }
                 }
                 writer.write(tabs + "</" + key + ">\n");
@@ -95,8 +101,17 @@ public class YamlToXmlConverter implements Converter
                 {
                     text += tabs;
                 }
-                writer.write(tabs + "<" + key + ">" + text + "</" + key + ">\n");
+                writer.write(tabs + "<" + key + ">" + text(text) + "</" + key + ">\n");
             }
+        }
+    }
+
+    static String text(Object obj) {
+        String text = obj.toString();
+        if (text.indexOf("<") > -1 && text.indexOf("<![CDATA[") == -1) {
+            return "<![CDATA[" + text + "]]>";
+        } else {
+            return text;
         }
     }
 
