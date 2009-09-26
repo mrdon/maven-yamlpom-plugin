@@ -1,23 +1,23 @@
 package org.twdata.maven.yamlpom;
 
-import org.yaml.snakeyaml.Yaml;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.yaml.snakeyaml.Yaml;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
 
 /**
  *
@@ -402,10 +402,10 @@ public class XmlToYamlConverter implements Converter {
         return result;
     }
 
-private static interface ElementFilter {
-    boolean shouldInclude(Element e);
+    private static interface ElementFilter {
+        boolean shouldInclude(Element e);
 
-}
+    }
 
     private static final ElementFilter ALL_ELEMENTS_FILTER = new ElementFilter() {
         public boolean shouldInclude(Element e) {

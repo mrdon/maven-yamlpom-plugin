@@ -1,13 +1,13 @@
 package org.twdata.maven.yamlpom;
 
 import org.apache.commons.io.IOUtils;
-import org.yaml.snakeyaml.Yaml;
-import org.xml.sax.SAXException;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import org.yaml.snakeyaml.Yaml;
 
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.util.Collection;
 import java.util.Map;
