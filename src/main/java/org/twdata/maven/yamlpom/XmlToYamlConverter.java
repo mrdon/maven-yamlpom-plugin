@@ -2,9 +2,6 @@ package org.twdata.maven.yamlpom;
 
 import org.yaml.snakeyaml.Yaml;
 import org.w3c.dom.*;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
-import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
